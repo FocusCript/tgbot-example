@@ -10,7 +10,6 @@ const telegramToken = process.env.TGBOT_TOKEN
 // Replace with your actual bot token from @BotFather
 const bot = new Telegraf(telegramToken);
 
-
 // Fake users data
 const fakeUsers = [
   {
