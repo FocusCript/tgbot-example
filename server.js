@@ -5,10 +5,15 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
+console.log('Starting point----')
+
 const telegramToken = process.env.TGBOT_TOKEN
 
 // Replace with your actual bot token from @BotFather
 const bot = new Telegraf(telegramToken);
+
+
+console.log('TG Token excuted----')
 
 // Fake users data
 const fakeUsers = [
