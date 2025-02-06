@@ -18,6 +18,7 @@
     "chartjs-node-canvas": "^4.1.6",
     "chartjs-plugin-datalabels": "^2.2.0",
     "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "telegraf": "^4.15.3"
   }
 }

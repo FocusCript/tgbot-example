@@ -1,4 +1,5 @@
 import { Telegraf } from 'telegraf'
+import express from 'express'
 import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
 import { createCanvas, loadImage } from 'canvas';
 import dotenv from 'dotenv'
@@ -381,6 +382,18 @@ async function generatePieChart() {
 // Start the bot
 bot.launch()
 console.log('Telegram bot is running...')
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Hello from Express on Render!');
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
 
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'))
