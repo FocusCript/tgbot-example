@@ -3,6 +3,21 @@ import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
 import { createCanvas, loadImage } from 'canvas';
 import dotenv from 'dotenv'
 
+const commandsHearing = {
+  'View_All_Users': '🚶🏻 View All Users',
+  'Statistics': '📊 Statistics',
+  'About': 'ℹ️ About',
+  'Settings': '⚙️ Settings',
+  'Language': '🌎 Language',
+  'Notification_Period': '🛎 Notification period',
+  'Backup_Longivity': '📝 Backup longivity',
+  'Back': '⬅️ Back',
+  'Uzbek': `🇺🇿 O'zbek`,
+  'Russian': '🇷🇺 Русский',
+  'English': '🇺🇸 English',
+  'Back_to_Settings': '⬅️ Back to Settings'
+}
+
 dotenv.config()
 
 console.log('Starting point----')
@@ -11,7 +26,6 @@ const telegramToken = process.env.TGBOT_TOKEN
 
 // Replace with your actual bot token from @BotFather
 const bot = new Telegraf(telegramToken);
-
 
 console.log('TG Token excuted----')
 
@@ -37,45 +51,204 @@ const fakeUsers = [
   }
 ];
 
-// Command: /start
-bot.start((ctx) => {
+const goToMainMenu = (ctx) => {
   const keyboard = [
-    [{ text: 'View All Users' }],
-    [{ text: 'Statistics' }]
+    [{ text: commandsHearing.View_All_Users }],
+    [{ text: commandsHearing.Statistics }],
+    [{ text: commandsHearing.About }],
+    [{ text: commandsHearing.Settings }],
   ];
 
   ctx.reply('Welcome to the Payment System Reporting Bot! Please choose an option below:', {
     reply_markup: {
       keyboard: keyboard,
-      one_time_keyboard: true
+      one_time_keyboard: true,
+      resize_keyboard: true
     }
   });
+}
+
+const goToSettings = (ctx) => {
+  const userButtons = [
+    [{
+      text: commandsHearing.Language,
+    }],
+    [{
+      text: commandsHearing.Notification_Period,
+    }],
+    [{
+      text: commandsHearing.Backup_Longivity,
+    }],
+    [{
+      text: commandsHearing.Back,
+      callback_data: 'back'
+    }]
+  ]
+
+  ctx.reply('Settings', {
+    reply_markup: {
+      keyboard: userButtons,
+      one_time_keyboard: true,
+      resize_keyboard: true
+    }
+  });
+}
+
+// Command: /start
+bot.start((ctx) => {
+  console.log(ctx?.message?.chat?.username, 'USER connected')
+  goToMainMenu(ctx)
 });
 
 // User clicks "View All Users" button
-bot.hears('View All Users', (ctx) => {
-  const userButtons = fakeUsers.map((user) => ({
+bot.hears(commandsHearing.View_All_Users, (ctx) => {
+  const userButtons = fakeUsers.map((user) => ([{
     text: `${user.name}`,
     callback_data: `view_${user.id}`
-  }));
+  }]));
 
   // Add the "Back" button to go back
-  userButtons.push({
-    text: 'Back',
+  userButtons.push([{
+    text: commandsHearing.Back,
     callback_data: 'back'
-  });
+  }]);
 
   ctx.reply('Here are the available users you can view:', {
     reply_markup: {
-      inline_keyboard: [userButtons]
+      inline_keyboard: userButtons
     }
   });
 });
 
+// User clicks "Leave message to support" button
+bot.hears(commandsHearing.Settings, async (ctx) => {
+  goToSettings(ctx)
+});
+
+bot.hears(commandsHearing.Backup_Longivity, async (ctx) => {
+  const userButtons = [30, 90, 180].map((period) => ([{
+    text: `${period} days `,
+    callback_data: `backup_${period}`
+  }]));
+
+  // Add the "Back" button to go back
+  userButtons.push([{
+    text: commandsHearing.Back,
+    callback_data: 'back'
+  }]);
+
+  ctx.reply('You can choose one of the options from this list:', {
+    reply_markup: {
+      inline_keyboard: userButtons
+    }
+  });
+})
+
+bot.hears(commandsHearing.Notification_Period, async (ctx) => {
+  const userButtons = [1, 2, 24, 48].map((period) => ([{
+    text: `${period} hours `,
+    callback_data: `notificationPeriod_${period}`
+  }]));
+
+  // Add the "Back" button to go back
+  userButtons.push([{
+    text: commandsHearing.Back,
+    callback_data: 'back'
+  }]);
+
+  ctx.reply('You can choose one of the options from this list:', {
+    reply_markup: {
+      inline_keyboard: userButtons
+    }
+  });
+})
+
+// User clicks "Leave message to support" button
+bot.hears(commandsHearing.Language, async (ctx) => {
+  const userButtons = [
+    [
+      {
+        text: commandsHearing.Uzbek,
+      },
+      {
+        text: commandsHearing.Russian,
+      },
+      {
+        text: commandsHearing.English,
+      }
+    ],
+    [
+      {
+        text: commandsHearing.Back_to_Settings,
+      }
+    ]
+  ]
+
+  ctx.reply('Settings', {
+    reply_markup: {
+      keyboard: userButtons,
+      one_time_keyboard: true,
+      resize_keyboard: true,
+      selective: true
+    }
+  });
+});
+
+bot.hears(commandsHearing.Uzbek, async (ctx) => {
+  const htmlContent = ` <b>🌟 This feature coming soon! 🌟</b>`
+  ctx.reply(htmlContent, { parse_mode: 'HTML' });
+  goToSettings(ctx)
+})
+bot.hears(commandsHearing.Russian, async (ctx) => {
+  const htmlContent = ` <b>🌟 This feature coming soon! 🌟</b>`
+  ctx.reply(htmlContent, { parse_mode: 'HTML' });
+  goToSettings(ctx)
+})
+bot.hears(commandsHearing.English, async (ctx) => {
+  const htmlContent = ` <b>🌟 This feature coming soon! 🌟</b>`
+  ctx.reply(htmlContent, { parse_mode: 'HTML' });
+  goToSettings(ctx)
+})
+
 // User clicks "Statistics" button
-bot.hears('Statistics', async (ctx) => {
+bot.hears(commandsHearing.Statistics, async (ctx) => {
   const pieChartImage = await generatePieChart();
   ctx.replyWithPhoto({ source: pieChartImage });
+});
+
+bot.hears(commandsHearing.Back, async (ctx) => {
+  goToMainMenu(ctx)
+});
+
+bot.hears(commandsHearing.Back_to_Settings, async (ctx) => {
+  goToSettings(ctx)
+});
+
+bot.hears(commandsHearing.About, async (ctx) => {
+  const htmlContent = `
+    <b>🌟 Welcome to Our Telegram Bot! 🌟</b>
+
+    <i>Thank you for choosing our services. Here is a little information about us:</i>
+
+    <b>👥 Who We Are</b>
+    We are a <b>creative team</b> of developers, designers, and technology experts who are passionate about building innovative bots, apps, and automating processes to help businesses grow. 🚀
+    <i>Our mission</i> is to bring technology closer to people and help companies achieve their digital transformation goals. 💡
+
+    <b>🛠️ Our Services</b>
+    <b>1. Custom Telegram Bot Development:</b> We specialize in building intelligent bots tailored to your business needs. 🤖
+    <b>2. Automation Solutions:</b> Automating workflows and processes to save you time and effort. ⏳
+    <b>3. Web and App Development:</b> Full-stack development for websites and applications. 🌐
+    <b>4. Technical Support:</b> Providing reliable support to ensure your business stays running smoothly. 📞
+
+    <b>📬 Contact Us</b>
+    If you have any questions or would like to discuss how we can help your business, feel free to reach out! 💬
+
+    <b>🌍 Follow Us on Social Media</b>
+    Stay connected and get updates on our latest offerings
+    <i>We look forward to working with you! 🙌</i>
+  `;
+
+  ctx.reply(htmlContent, { parse_mode: 'HTML' });
 });
 
 // Callback query handler for selecting a user
@@ -83,8 +256,7 @@ bot.on('callback_query', (ctx) => {
   const data = ctx.callbackQuery.data;
 
   if (data === 'back') {
-    ctx.answerCbQuery();
-    ctx.reply('You can always click "View All Users" to view the users again.');
+    goToMainMenu(ctx)
     return;
   }
 
@@ -94,12 +266,12 @@ bot.on('callback_query', (ctx) => {
     const selectedUser = fakeUsers.find(user => user.id === userId);
 
     if (selectedUser) {
-      let userDetails = `User Details for ${selectedUser.name}:\n`;
-      userDetails += `Balance: $${selectedUser.balance}\n`;
-      userDetails += 'Transaction History:\n';
+      let userDetails = `📒 User Details for ${selectedUser.name}:\n`;
+      userDetails += `💰 Balance: 💲${selectedUser.balance}\n`;
+      userDetails += '🗳 Transaction History:\n';
 
       selectedUser.transactions.forEach((transaction) => {
-        userDetails += `${transaction.date} - $${transaction.amount} (${transaction.description})\n`;
+        userDetails += `⏳${transaction.date} ▶️ $${transaction.amount} (${transaction.description})\n`;
       });
 
       ctx.answerCbQuery();
@@ -108,14 +280,29 @@ bot.on('callback_query', (ctx) => {
       ctx.reply('User not found.');
     }
   }
-});
 
-// Helper function to calculate percentage
-function calculatePercentage(balance) {
-  const totalBalance = fakeUsers.reduce((sum, user) => sum + user.balance, 0);
-  const percentage = ((balance / totalBalance) * 100).toFixed(2);
-  return percentage;
-}
+  if (data.startsWith('backup_')) {
+    const period = data.split('_')[1];
+    ctx.answerCbQuery();
+
+    const htmlContent = `
+    <b> The backup is configured for up to ⏳ ${period} days </b>
+    <i>Please do not forget to check and update your data so as not to lose important information 📜</i>
+  `;
+    ctx.reply(htmlContent, { parse_mode: 'HTML' });
+  }
+
+  if (data.startsWith('notificationPeriod_')) {
+    const period = data.split('_')[1];
+    ctx.answerCbQuery();
+
+    const htmlContent = `
+    <b> The notification is configured for up to ⏳ ${period} hours </b>
+    <i>You will get notification message every ${period} hours 📜</i>
+  `;
+    ctx.reply(htmlContent, { parse_mode: 'HTML' });
+  }
+});
 
 // Generate pie chart image using chartjs-node-canvas with manually added percentage labels
 async function generatePieChart() {
@@ -190,7 +377,6 @@ async function generatePieChart() {
   // Return the image with percentages added
   return canvas.toBuffer();
 }
-
 
 // Start the bot
 bot.launch()
